@@ -27,9 +27,7 @@ namespace TodoEFBlazorWasm.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(@"Data Source=SQL5101.site4now.net;Initial Catalog=db_a76ab7_jjeffrin;User Id=db_a76ab7_jjeffrin_admin;Password=TX9AQ9zX6-Q9cf!"));
-            // "Data Source=JEFFRIN-ASUSLAP;Initial Catalog=StudentsManagement;Integrated Security=True"
-            // "Data Source=SQL5101.site4now.net;Initial Catalog=db_a76ab7_jjeffrin;User Id=db_a76ab7_jjeffrin_admin;Password=YOUR_DB_PASSWORD
+            services.AddDbContextPool<AppDbContext>(options => options.UseSqlServer(this.Configuration.GetConnectionString("Cloud")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
