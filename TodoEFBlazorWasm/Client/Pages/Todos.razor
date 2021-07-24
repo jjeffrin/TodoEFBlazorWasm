@@ -1,0 +1,97 @@
+﻿@page "/todo"
+@inject HttpClient Http
+
+<h1>Todos</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<h3>Add new todo</h3>
+<input type="text" placeholder="Title" @bind-value="@newTodo.Title" @bind-value:event="oninput" />
+<input type="text" placeholder="Description" @bind-value="@newTodo.Description" @bind-value:event="oninput" />
+<label>Completed ?</label>
+<input type="checkbox" @bind-value="@newTodo.IsComplete" @bind-value:event="oninput" />
+<button @onclick="AddNewTodo">Add todo</button>
+
+@if (todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Is Complete</th>
+                <th>Created Date</th>
+                <th>Updated Date</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var todo in todos)
+            {
+                <tr @ondblclick="ToggleEditMode">
+                    @if (!editMode)
+                    {
+                        <td>@todo.Id</td>
+                        <td>@todo.Title</td>
+                        <td>@todo.Description</td>
+                        <td>@todo.IsComplete.ToString()</td>
+                        <td>@todo.CreatedDate</td>
+                        <td>@todo.UpdatedDate</td>
+                        <td><button @onclick="() => DeleteTodo(todo.Id)">Delete</button></td>
+            }
+                    else
+                    {
+                        <td>@todo.Id</td>
+                        <td><input type="text" @bind-value="@todo.Title" @bind-value:event="oninput"/></td>
+                        <td><input type="text" @bind-value="@todo.Description" @bind-value:event="oninput"/></td>
+                        <td><input type="checkbox" @bind-value="@todo.IsComplete" @bind-value:event="oninput"/></td>
+                        <td>@todo.CreatedDate</td>
+                        <td>@todo.UpdatedDate</td>
+                        <td><button @onclick="() => UpdateTodo(todo)">Update</button></td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Todo> todos;
+    public Todo newTodo { get; set; } = new Todo();
+    private bool editMode = false;
+
+    private void ToggleEditMode()
+    {
+        editMode = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        todos = await Http.GetFromJsonAsync<IEnumerable<Todo>>("api/Todos/GetAllTodos");
+    }
+
+    private async Task AddNewTodo()
+    {
+        await Http.PostAsJsonAsync("api/Todos/AddTodo", newTodo);
+        todos = await Http.GetFromJsonAsync<IEnumerable<Todo>>("api/Todos/GetAllTodos");
+    }
+
+    private async Task DeleteTodo(int Id)
+    {
+        await Http.DeleteAsync("api/Todos/DeleteTodo/" + Id);
+        todos = await Http.GetFromJsonAsync<IEnumerable<Todo>>("api/Todos/GetAllTodos");
+    }
+
+    private async Task UpdateTodo(Todo todo)
+    {
+        await Http.PutAsJsonAsync("api/Todos/UpdateTodo", todo);
+        todos = await Http.GetFromJsonAsync<IEnumerable<Todo>>("api/Todos/GetAllTodos");
+        editMode = false;
+    }
+
+}
